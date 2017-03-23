@@ -1,5 +1,7 @@
 package br.com.rar.agenda.client;
 
+import android.support.annotation.Nullable;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
@@ -16,9 +18,23 @@ import br.com.rar.agenda.client.exception.AgendaWebClientIOException;
 public class WebClient {
 
     public String post(String json) throws AgendaWebClientIOException {
+        String endereco = "https://www.caelum.com.br/mobile";
+        return realizaRequisicao(json, endereco);
+    }
 
+    public void insere(String json)  {
         try {
-            URL url = new URL("https://www.caelum.com.br/mobile");
+            String endereco = "http://192.168.1.9:8080/api/aluno";
+            realizaRequisicao(json, endereco);
+        } catch (AgendaWebClientIOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Nullable
+    private String realizaRequisicao(String json, String endereco) throws AgendaWebClientIOException {
+        try {
+            URL url = new URL(endereco);
 
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.addRequestProperty("Content-type", "application/json");
@@ -48,5 +64,4 @@ public class WebClient {
 
         return null;
     }
-
 }

@@ -21,6 +21,7 @@ import java.io.File;
 
 import br.com.rar.agenda.dao.AlunoDAO;
 import br.com.rar.agenda.modelo.Aluno;
+import br.com.rar.agenda.task.InsereAlunoTask;
 
 public class FormularioActivity extends AppCompatActivity {
 
@@ -89,6 +90,8 @@ public class FormularioActivity extends AppCompatActivity {
                     alunoDAO.altera(aluno);
                 }
                 alunoDAO.close();
+
+                new InsereAlunoTask(aluno).execute();
 
                 Toast.makeText(FormularioActivity.this, aluno.getNome() + " salvo ", Toast.LENGTH_SHORT).show();
                 finish();
