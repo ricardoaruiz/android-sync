@@ -21,16 +21,7 @@ public class WebClient {
         String endereco = "https://www.caelum.com.br/mobile";
         return realizaRequisicao(json, endereco);
     }
-
-    public void insere(String json)  {
-        try {
-            String endereco = "http://192.168.1.9:8080/api/aluno";
-            realizaRequisicao(json, endereco);
-        } catch (AgendaWebClientIOException e) {
-            e.printStackTrace();
-        }
-    }
-
+    
     @Nullable
     private String realizaRequisicao(String json, String endereco) throws AgendaWebClientIOException {
         try {

@@ -14,10 +14,10 @@ import br.com.rar.agenda.client.WebClient;
 import br.com.rar.agenda.client.exception.AgendaWebClientIOException;
 import br.com.rar.agenda.client.request.MediaRequest;
 import br.com.rar.agenda.client.request.MediaRequestAluno;
+import br.com.rar.agenda.client.response.MediaResponse;
 import br.com.rar.agenda.converter.AlunoConverter;
 import br.com.rar.agenda.dao.AlunoDAO;
 import br.com.rar.agenda.modelo.Aluno;
-import br.com.rar.agenda.client.response.MediaResponse;
 import br.com.rar.agenda.utils.JsonUtil;
 
 /**

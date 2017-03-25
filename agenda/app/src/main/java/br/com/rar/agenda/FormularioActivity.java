@@ -2,26 +2,26 @@ package br.com.rar.agenda;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Environment;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
 
 import br.com.rar.agenda.dao.AlunoDAO;
 import br.com.rar.agenda.modelo.Aluno;
-import br.com.rar.agenda.task.InsereAlunoTask;
+import br.com.rar.agenda.retrofit.RetrofitInicializador;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class FormularioActivity extends AppCompatActivity {
 
@@ -91,7 +91,19 @@ public class FormularioActivity extends AppCompatActivity {
                 }
                 alunoDAO.close();
 
-                new InsereAlunoTask(aluno).execute();
+                //new InsereAlunoTask(aluno).execute();
+                Call<Void> insereAlunoCall = new RetrofitInicializador().getAlunoService().insere(aluno);
+                insereAlunoCall.enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        Log.i("onResponse", "requisição com sucesso");
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Log.i("onFaliure", "requisição falhou");
+                    }
+                });
 
                 Toast.makeText(FormularioActivity.this, aluno.getNome() + " salvo ", Toast.LENGTH_SHORT).show();
                 finish();
