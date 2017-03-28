@@ -1,5 +1,7 @@
 package br.com.rar.agenda.modelo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serializable;
 
 /**
@@ -9,6 +11,7 @@ public class Aluno implements Serializable {
 
     private static final long serialVersionUID = 8110372202663052350L;
 
+    @JsonProperty("idCliente")
     private Long id;
 
     private String nome;

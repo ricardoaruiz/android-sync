@@ -21,7 +21,7 @@ public class WebClient {
         String endereco = "https://www.caelum.com.br/mobile";
         return realizaRequisicao(json, endereco);
     }
-    
+
     @Nullable
     private String realizaRequisicao(String json, String endereco) throws AgendaWebClientIOException {
         try {
