@@ -26,8 +26,13 @@ import br.com.rar.agenda.adapter.AlunoAdapter;
 import br.com.rar.agenda.client.WebClient;
 import br.com.rar.agenda.converter.AlunoConverter;
 import br.com.rar.agenda.dao.AlunoDAO;
+import br.com.rar.agenda.dto.AlunoSync;
 import br.com.rar.agenda.modelo.Aluno;
+import br.com.rar.agenda.retrofit.RetrofitInicializador;
 import br.com.rar.agenda.task.EnviaAlunosTask;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ListaContatos extends AppCompatActivity {
 
@@ -56,6 +61,24 @@ public class ListaContatos extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        Call<AlunoSync> call = RetrofitInicializador.getInstance().getAlunoService().lista();
+        call.enqueue(new Callback<AlunoSync>() {
+            @Override
+            public void onResponse(Call<AlunoSync> call, Response<AlunoSync> response) {
+                AlunoSync alunoSync = response.body();
+                AlunoDAO dao = new AlunoDAO(ListaContatos.this);
+                dao.sincroniza(alunoSync.getAlunos());
+                dao.close();
+                carregaLista();
+            }
+
+            @Override
+            public void onFailure(Call<AlunoSync> call, Throwable t) {
+                Log.e("onFailure", t.getMessage());
+            }
+        });
+
         carregaLista();
     }
 

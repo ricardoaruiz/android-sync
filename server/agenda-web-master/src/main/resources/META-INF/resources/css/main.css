@@ -1,0 +1,51 @@
+@CHARSET "UTF-8";
+
+body {
+	font-family: 'Open Sans', sans-serif;
+	background: #f1f3f4;
+}
+
+.icon-font-default-color{
+	color: #363c3c;
+}
+
+.main-botao{
+	height: 250px;
+	width: 250px;
+}
+
+h1, h2 {
+	font-family: 'Open Sans', sans-serif;
+}
+
+.main-title {
+	font-weight: bold;
+	font-size: 3em;
+	color: #363c3c;
+}
+
+.main-nav li a{
+	color: #363c3c;
+}
+
+#logo-header {
+	height: 40px;
+	margin: 13%;
+}
+
+@media ( max-width : 992px) {
+	#logo-header {
+		margin: 13% 5%;
+	}
+}
+
+@media ( max-width : 600px) {
+	#logo-header {
+		height: 35px;
+		margin: 14% 5%;
+	}
+}
+
+i.icon-white {
+	color: #fff;
+}

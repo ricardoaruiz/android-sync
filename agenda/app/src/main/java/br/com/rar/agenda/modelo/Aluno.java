@@ -1,5 +1,6 @@
 package br.com.rar.agenda.modelo;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
@@ -7,6 +8,7 @@ import java.io.Serializable;
 /**
  * Created by ralmendro on 12/22/16.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Aluno implements Serializable {
 
     private static final long serialVersionUID = 8110372202663052350L;

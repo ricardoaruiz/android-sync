@@ -25,7 +25,7 @@ public class AlunoDAO extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String sqlCreateTableAlunos = "CREATE TABLE Alunos_novo " +
+        String sqlCreateTableAlunos = "CREATE TABLE Alunos" +
                 "(id CHAR(36) PRIMARY KEY, " +
                 "nome TEXT NOT NULL, " +
                 "endereco TEXT, " +
@@ -85,11 +85,19 @@ public class AlunoDAO extends SQLiteOpenHelper {
         //Obtem uma referência para o Banco de dados
         SQLiteDatabase db = this.getWritableDatabase();
 
-        aluno.setId(UUID.randomUUID().toString());
+        //Seta o UUID para Alunos
+        setAlunoUUID(aluno);
+
         //Cria uma mapeamento para realizar a instrução insert
         ContentValues dados = getDadosAluno(aluno);
 
         return db.insert("Alunos", null, dados);
+    }
+
+    private void setAlunoUUID(Aluno aluno) {
+        if(aluno.getId() != null) {
+            aluno.setId(UUID.randomUUID().toString());
+        }
     }
 
     public List<Aluno> buscaAlunos() {
@@ -159,5 +167,24 @@ public class AlunoDAO extends SQLiteOpenHelper {
         dados.put("nota", aluno.getNota());
         dados.put("foto", aluno.getFoto());
         return dados;
+    }
+
+    public void sincroniza(List<Aluno> alunos) {
+        for(Aluno aluno : alunos) {
+            if(existe(aluno)) {
+                altera(aluno);
+            } else {
+                insere(aluno);
+            }
+        }
+    }
+
+    private boolean existe(Aluno aluno) {
+        SQLiteDatabase db = getReadableDatabase();
+        String sql = "SELECT id FROM Alunos WHERE id = ? LIMIT 1";
+
+        Cursor cursor = db.rawQuery(sql, new String[]{aluno.getId()});
+        int quantidadeRegistros = cursor.getCount();
+        return quantidadeRegistros > 0;
     }
 }
