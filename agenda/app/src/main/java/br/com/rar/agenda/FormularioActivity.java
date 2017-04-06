@@ -1,6 +1,7 @@
 package br.com.rar.agenda;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -91,18 +92,7 @@ public class FormularioActivity extends AppCompatActivity {
                 }
                 alunoDAO.close();
 
-                Call<Void> insereAlunoCall = RetrofitInicializador.getInstance().getAlunoService().insere(aluno);
-                insereAlunoCall.enqueue(new Callback<Void>() {
-                    @Override
-                    public void onResponse(Call<Void> call, Response<Void> response) {
-                        Log.i("onResponse", "requisição com sucesso");
-                    }
-
-                    @Override
-                    public void onFailure(Call<Void> call, Throwable t) {
-                        Log.i("onFaliure", "requisição falhou");
-                    }
-                });
+                enviarParaServidor(aluno);
 
                 Toast.makeText(FormularioActivity.this, aluno.getNome() + " salvo ", Toast.LENGTH_SHORT).show();
                 finish();
@@ -111,6 +101,22 @@ public class FormularioActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void enviarParaServidor(Aluno aluno) {
+
+        Call<Void> insereAlunoCall = RetrofitInicializador.getInstance().getAlunoService().insere(aluno);
+        insereAlunoCall.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                Log.i("onResponse", "requisição com sucesso");
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.i("onFaliure", "requisição falhou");
+            }
+        });
     }
 
 }

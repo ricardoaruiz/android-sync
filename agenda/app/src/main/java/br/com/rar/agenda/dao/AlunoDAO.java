@@ -95,7 +95,7 @@ public class AlunoDAO extends SQLiteOpenHelper {
     }
 
     private void setAlunoUUID(Aluno aluno) {
-        if(aluno.getId() != null) {
+        if(aluno.getId() == null) {
             aluno.setId(UUID.randomUUID().toString());
         }
     }

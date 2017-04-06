@@ -1,11 +1,13 @@
 package br.com.rar.agenda;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.ListViewCompat;
@@ -42,6 +44,8 @@ public class ListaContatos extends AppCompatActivity {
 
     private ListView listAlunos;
 
+    private SwipeRefreshLayout swipe;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -53,14 +57,26 @@ public class ListaContatos extends AppCompatActivity {
         listAlunos = (ListView) findViewById(R.id.lista_alunos);
         registerForContextMenu(listAlunos);
 
+        swipe = (SwipeRefreshLayout) findViewById(R.id.swipe_lista_alunos);
+        swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                buscaAlunosServidor(false);
+            }
+        });
+
         setListAlunoItemClick();
         setBtnNovoAlunoClick();
-
+        buscaAlunosServidor(true);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        carregaLista();
+    }
+
+    private void buscaAlunosServidor(final boolean showProgess) {
 
         Call<AlunoSync> call = RetrofitInicializador.getInstance().getAlunoService().lista();
         call.enqueue(new Callback<AlunoSync>() {
@@ -71,15 +87,16 @@ public class ListaContatos extends AppCompatActivity {
                 dao.sincroniza(alunoSync.getAlunos());
                 dao.close();
                 carregaLista();
+
+                swipe.setRefreshing(false);
             }
 
             @Override
             public void onFailure(Call<AlunoSync> call, Throwable t) {
                 Log.e("onFailure", t.getMessage());
+                swipe.setRefreshing(false);
             }
         });
-
-        carregaLista();
     }
 
     @Override
@@ -165,11 +182,21 @@ public class ListaContatos extends AppCompatActivity {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
 
-                AlunoDAO alunoDAO = new AlunoDAO(ListaContatos.this);
-                alunoDAO.remover(aluno);
-                alunoDAO.close();
+                Call<Void> callRemover = RetrofitInicializador.getInstance().getAlunoService().remover(aluno.getId());
+                callRemover.enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        AlunoDAO alunoDAO = new AlunoDAO(ListaContatos.this);
+                        alunoDAO.remover(aluno);
+                        alunoDAO.close();
+                        carregaLista();
+                    }
 
-                carregaLista();
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Toast.makeText(ListaContatos.this, "Ocorreu um problema ao remover o aluno.", Toast.LENGTH_SHORT).show();
+                    }
+                });
 
                 return false;
             }

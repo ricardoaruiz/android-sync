@@ -5,14 +5,20 @@
     android:id="@+id/activity_lista_contatos"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     android:orientation="vertical"
     tools:context="br.com.rar.agenda.ListaContatos">
 
-    <ListView
-        android:id="@+id/lista_alunos"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_lista_alunos"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content">
+
+        <ListView
+            android:id="@+id/lista_alunos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
 
     <Button
         android:id="@+id/lista_aluno_btnNovoAluno"
