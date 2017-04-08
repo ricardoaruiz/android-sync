@@ -10,14 +10,12 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.ListViewCompat;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -25,8 +23,6 @@ import android.widget.Toast;
 import java.util.List;
 
 import br.com.rar.agenda.adapter.AlunoAdapter;
-import br.com.rar.agenda.client.WebClient;
-import br.com.rar.agenda.converter.AlunoConverter;
 import br.com.rar.agenda.dao.AlunoDAO;
 import br.com.rar.agenda.dto.AlunoSync;
 import br.com.rar.agenda.modelo.Aluno;
@@ -76,7 +72,9 @@ public class ListaContatos extends AppCompatActivity {
         carregaLista();
     }
 
-    private void buscaAlunosServidor(final boolean showProgess) {
+    private void buscaAlunosServidor(final boolean showProgress) {
+
+        final ProgressDialog processando = showProgress == false ? null : ProgressDialog.show(this, "Processando...", "Sincronizando alunos...", false);
 
         Call<AlunoSync> call = RetrofitInicializador.getInstance().getAlunoService().lista();
         call.enqueue(new Callback<AlunoSync>() {
@@ -87,16 +85,27 @@ public class ListaContatos extends AppCompatActivity {
                 dao.sincroniza(alunoSync.getAlunos());
                 dao.close();
                 carregaLista();
-
                 swipe.setRefreshing(false);
+                pararProcessando(showProgress, processando);
             }
 
             @Override
             public void onFailure(Call<AlunoSync> call, Throwable t) {
                 Log.e("onFailure", t.getMessage());
                 swipe.setRefreshing(false);
+                pararProcessando(showProgress, processando);
             }
         });
+    }
+
+    private void pararProcessando(ProgressDialog processando) {
+        pararProcessando(true, processando);
+    }
+
+    private void pararProcessando(boolean showProgress, ProgressDialog processando) {
+        if(showProgress && processando != null) {
+            processando.dismiss();
+        }
     }
 
     @Override
@@ -182,6 +191,8 @@ public class ListaContatos extends AppCompatActivity {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
 
+                final ProgressDialog processando = ProgressDialog.show(ListaContatos.this,"Processando...","Removendo aluno...", false);
+
                 Call<Void> callRemover = RetrofitInicializador.getInstance().getAlunoService().remover(aluno.getId());
                 callRemover.enqueue(new Callback<Void>() {
                     @Override
@@ -190,11 +201,13 @@ public class ListaContatos extends AppCompatActivity {
                         alunoDAO.remover(aluno);
                         alunoDAO.close();
                         carregaLista();
+                        pararProcessando(processando);
                     }
 
                     @Override
                     public void onFailure(Call<Void> call, Throwable t) {
                         Toast.makeText(ListaContatos.this, "Ocorreu um problema ao remover o aluno.", Toast.LENGTH_SHORT).show();
+                        pararProcessando(processando);
                     }
                 });
 

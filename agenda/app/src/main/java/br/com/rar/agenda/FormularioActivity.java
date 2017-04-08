@@ -31,6 +31,7 @@ public class FormularioActivity extends AppCompatActivity {
     private FormularioHelper formularioHelper;
 
     private String caminhoFoto;
+    private ProgressDialog processando;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +106,8 @@ public class FormularioActivity extends AppCompatActivity {
 
     private void enviarParaServidor(Aluno aluno) {
 
+        processando = ProgressDialog.show(this,"Processando...","Enviando Aluno ao servidor...", false);
+
         Call<Void> insereAlunoCall = RetrofitInicializador.getInstance().getAlunoService().insere(aluno);
         insereAlunoCall.enqueue(new Callback<Void>() {
             @Override
@@ -117,6 +120,14 @@ public class FormularioActivity extends AppCompatActivity {
                 Log.i("onFaliure", "requisição falhou");
             }
         });
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(processando != null && processando.isShowing()) {
+            processando.dismiss();
+        }
     }
 
 }
