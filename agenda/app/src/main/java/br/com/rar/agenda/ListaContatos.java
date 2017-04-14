@@ -20,11 +20,16 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.List;
 
 import br.com.rar.agenda.adapter.AlunoAdapter;
 import br.com.rar.agenda.dao.AlunoDAO;
 import br.com.rar.agenda.dto.AlunoSync;
+import br.com.rar.agenda.event.AtualizaListaAlunoEvent;
 import br.com.rar.agenda.modelo.Aluno;
 import br.com.rar.agenda.retrofit.RetrofitInicializador;
 import br.com.rar.agenda.task.EnviaAlunosTask;
@@ -64,12 +69,25 @@ public class ListaContatos extends AppCompatActivity {
         setListAlunoItemClick();
         setBtnNovoAlunoClick();
         buscaAlunosServidor(true);
+
+        EventBus.getDefault().register(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onEvent(AtualizaListaAlunoEvent event) {
+       carregaLista();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         carregaLista();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
     }
 
     private void buscaAlunosServidor(final boolean showProgress) {
