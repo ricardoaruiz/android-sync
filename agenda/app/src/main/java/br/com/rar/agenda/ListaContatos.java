@@ -70,7 +70,6 @@ public class ListaContatos extends AppCompatActivity {
         setBtnNovoAlunoClick();
         buscaAlunosServidor(true);
 
-        EventBus.getDefault().register(this);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -82,11 +81,12 @@ public class ListaContatos extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         carregaLista();
+        EventBus.getDefault().register(this);
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
         EventBus.getDefault().unregister(this);
     }
 
