@@ -28,20 +28,21 @@ import java.util.List;
 
 import br.com.rar.agenda.adapter.AlunoAdapter;
 import br.com.rar.agenda.dao.AlunoDAO;
-import br.com.rar.agenda.dto.AlunoSync;
 import br.com.rar.agenda.event.AtualizaListaAlunoEvent;
 import br.com.rar.agenda.modelo.Aluno;
 import br.com.rar.agenda.retrofit.RetrofitInicializador;
+import br.com.rar.agenda.sinc.AlunoSincronizador;
 import br.com.rar.agenda.task.EnviaAlunosTask;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ListaContatos extends AppCompatActivity {
+public class ListaAlunosActivity extends AppCompatActivity {
 
     public static final int CALL_PHONE_RETURN_CODE = 1;
     private static final int RECEIVE_SMS_RETURN_CODE = 2;
     private static final int INTERNET_RETURN_CODE = 3;
+    private final AlunoSincronizador alunosSincronizador = new AlunoSincronizador(this);
 
     private ListView listAlunos;
 
@@ -62,18 +63,20 @@ public class ListaContatos extends AppCompatActivity {
         swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                buscaAlunosServidor(false);
+                alunosSincronizador.buscaTodos();
             }
         });
 
         setListAlunoItemClick();
-        setBtnNovoAlunoClick();
-        buscaAlunosServidor(true);
+        alunosSincronizador.buscaTodos();
 
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEvent(AtualizaListaAlunoEvent event) {
+        if(swipe.isRefreshing()) {
+            swipe.setRefreshing(false);
+        }
        carregaLista();
     }
 
@@ -88,32 +91,6 @@ public class ListaContatos extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         EventBus.getDefault().unregister(this);
-    }
-
-    private void buscaAlunosServidor(final boolean showProgress) {
-
-        final ProgressDialog processando = showProgress == false ? null : ProgressDialog.show(this, "Processando...", "Sincronizando alunos...", false);
-
-        Call<AlunoSync> call = RetrofitInicializador.getInstance().getAlunoService().lista();
-        call.enqueue(new Callback<AlunoSync>() {
-            @Override
-            public void onResponse(Call<AlunoSync> call, Response<AlunoSync> response) {
-                AlunoSync alunoSync = response.body();
-                AlunoDAO dao = new AlunoDAO(ListaContatos.this);
-                dao.sincroniza(alunoSync.getAlunos());
-                dao.close();
-                carregaLista();
-                swipe.setRefreshing(false);
-                pararProcessando(showProgress, processando);
-            }
-
-            @Override
-            public void onFailure(Call<AlunoSync> call, Throwable t) {
-                Log.e("onFailure", t.getMessage());
-                swipe.setRefreshing(false);
-                pararProcessando(showProgress, processando);
-            }
-        });
     }
 
     private void pararProcessando(ProgressDialog processando) {
@@ -170,7 +147,7 @@ public class ListaContatos extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> lista, View item, int position, long id) {
                 Aluno aluno = (Aluno) lista.getItemAtPosition(position);
-                Intent irParaFormulario = new Intent(ListaContatos.this, FormularioActivity.class);
+                Intent irParaFormulario = new Intent(ListaAlunosActivity.this, FormularioActivity.class);
                 irParaFormulario.putExtra("aluno", aluno);
                 startActivity(irParaFormulario);
             }
@@ -182,7 +159,7 @@ public class ListaContatos extends AppCompatActivity {
         btnNovoAluno.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intentVaiParaFormulario = new Intent(ListaContatos.this, FormularioActivity.class);
+                Intent intentVaiParaFormulario = new Intent(ListaAlunosActivity.this, FormularioActivity.class);
                 startActivity(intentVaiParaFormulario);
             }
         });
@@ -209,13 +186,13 @@ public class ListaContatos extends AppCompatActivity {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
 
-                final ProgressDialog processando = ProgressDialog.show(ListaContatos.this,"Processando...","Removendo aluno...", false);
+                final ProgressDialog processando = ProgressDialog.show(ListaAlunosActivity.this,"Processando...","Removendo aluno...", false);
 
                 Call<Void> callRemover = RetrofitInicializador.getInstance().getAlunoService().remover(aluno.getId());
                 callRemover.enqueue(new Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, Response<Void> response) {
-                        AlunoDAO alunoDAO = new AlunoDAO(ListaContatos.this);
+                        AlunoDAO alunoDAO = new AlunoDAO(ListaAlunosActivity.this);
                         alunoDAO.remover(aluno);
                         alunoDAO.close();
                         carregaLista();
@@ -224,7 +201,7 @@ public class ListaContatos extends AppCompatActivity {
 
                     @Override
                     public void onFailure(Call<Void> call, Throwable t) {
-                        Toast.makeText(ListaContatos.this, "Ocorreu um problema ao remover o aluno.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ListaAlunosActivity.this, "Ocorreu um problema ao remover o aluno.", Toast.LENGTH_SHORT).show();
                         pararProcessando(processando);
                     }
                 });
@@ -270,8 +247,8 @@ public class ListaContatos extends AppCompatActivity {
         menuLigar.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                if (ActivityCompat.checkSelfPermission(ListaContatos.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(ListaContatos.this, new String[] {Manifest.permission.CALL_PHONE}, CALL_PHONE_RETURN_CODE);
+                if (ActivityCompat.checkSelfPermission(ListaAlunosActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(ListaAlunosActivity.this, new String[] {Manifest.permission.CALL_PHONE}, CALL_PHONE_RETURN_CODE);
                 } else {
                     Intent intentLigar = new Intent(Intent.ACTION_CALL);
                     intentLigar.setData(Uri.parse("tel:" + aluno.getTelefone()));
