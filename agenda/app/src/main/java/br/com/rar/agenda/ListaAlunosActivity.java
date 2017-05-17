@@ -54,6 +54,8 @@ public class ListaAlunosActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_contatos);
 
+        setBtnNovoAlunoClick();
+
         verifyAndRequestPermissions();
 
         listAlunos = (ListView) findViewById(R.id.lista_alunos);
@@ -64,11 +66,13 @@ public class ListaAlunosActivity extends AppCompatActivity {
             @Override
             public void onRefresh() {
                 alunosSincronizador.buscaTodos();
+                alunosSincronizador.sincronizaAlunosInternos();
             }
         });
 
         setListAlunoItemClick();
         alunosSincronizador.buscaTodos();
+        alunosSincronizador.sincronizaAlunosInternos();
 
     }
 
@@ -171,7 +175,7 @@ public class ListaAlunosActivity extends AppCompatActivity {
         alunoDAO.close();
 
         for(Aluno aluno : alunos) {
-            Log.i("id do aluno", String.valueOf(aluno.getId()));
+            Log.i("id do aluno", "Id do aluno: "  + aluno.getId() + " sincronizado: " + aluno.getSincronizado());
         }
 
         AlunoAdapter adapter = new AlunoAdapter(this, alunos);

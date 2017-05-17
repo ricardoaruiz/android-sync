@@ -20,7 +20,7 @@ import br.com.rar.agenda.modelo.Aluno;
 public class AlunoDAO extends SQLiteOpenHelper {
 
     public AlunoDAO(Context context) {
-        super(context, "agendadb", null, 5);
+        super(context, "agendadb", null, 6);
     }
 
     @Override
@@ -32,7 +32,8 @@ public class AlunoDAO extends SQLiteOpenHelper {
                 "telefone TEXT, " +
                 "site TEXT, " +
                 "nota REAL, " +
-                "foto TEXT);";
+                "foto TEXT, " +
+                "sincronizado INT DEFAULT 0);";
         db.execSQL(sqlCreateTableAlunos);
     }
 
@@ -77,8 +78,20 @@ public class AlunoDAO extends SQLiteOpenHelper {
 
                     db.update("Alunos",valoresAlterados, "id = ?", new String[]{aluno.getId()});
                 }
+            case 5:
+                String adicionaCampoSincronizado = "ALTER TABLE Alunos ADD COLUMN sincronizado INT DEFAULT 0";
+                db.execSQL(adicionaCampoSincronizado);
         }
 
+    }
+
+    public List<Aluno> listaNaoSincronizados() {
+        String sql = "SELECT * FROM Alunos WHERE sincronizado = 0";
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursorAlunos = db.rawQuery(sql, null);
+        List<Aluno> listaAlunosNaoSincronizados = populaAlunos(cursorAlunos);
+        cursorAlunos.close();
+        return listaAlunosNaoSincronizados;
     }
 
     public long insere(Aluno aluno) {
@@ -127,6 +140,7 @@ public class AlunoDAO extends SQLiteOpenHelper {
             aluno.setSite(cursorAlunos.getString(cursorAlunos.getColumnIndex("site")));
             aluno.setNota(cursorAlunos.getDouble(cursorAlunos.getColumnIndex("nota")));
             aluno.setFoto(cursorAlunos.getString(cursorAlunos.getColumnIndex("foto")));
+            aluno.setSincronizado(cursorAlunos.getInt(cursorAlunos.getColumnIndex("sincronizado")));
             listaAlunos.add(aluno);
         }
         return listaAlunos;
@@ -166,11 +180,13 @@ public class AlunoDAO extends SQLiteOpenHelper {
         dados.put("site", aluno.getSite());
         dados.put("nota", aluno.getNota());
         dados.put("foto", aluno.getFoto());
+        dados.put("sincronizado", aluno.getSincronizado());
         return dados;
     }
 
     public void sincroniza(List<Aluno> alunos) {
         for(Aluno aluno : alunos) {
+            aluno.sincroniza();
             if(existe(aluno)) {
                 if(aluno.isDesativado()) {
                     remover(aluno);
